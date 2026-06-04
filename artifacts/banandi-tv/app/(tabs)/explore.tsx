@@ -3,15 +3,25 @@ import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CategoryPill from "@/components/CategoryPill";
 import VideoCard from "@/components/VideoCard";
-import { CATEGORIES, getVideosByCategory } from "@/data/videos";
+import { CATEGORIES } from "@/data/videos";
 import { useColors } from "@/hooks/useColors";
+import { useApi } from "@/context/ApiContext";
 
 export default function ExploreScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState(0);
+  const { homeVideos } = useApi();
 
-  const videos = getVideosByCategory(activeCategory);
+  const catName = CATEGORIES.find((c) => c.id === activeCategory)?.name.toLowerCase() ?? "";
+  const videos = activeCategory === 0
+    ? homeVideos
+    : homeVideos.filter(
+        (v) =>
+          v.categoryId === activeCategory ||
+          v.category.toLowerCase().includes(catName) ||
+          v.tags.some((t) => t.toLowerCase().includes(catName))
+      );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
