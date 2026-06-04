@@ -12,19 +12,29 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import VideoCard from "@/components/VideoCard";
-import { VIDEOS, searchVideos } from "@/data/videos";
 import { useColors } from "@/hooks/useColors";
+import { useApi } from "@/context/ApiContext";
 
-const HOT_SEARCHES = ["Action", "Séries", "Animation", "Horreur", "Netflix", "Marvel"];
+const HOT_SEARCHES = ["Action", "Séries", "Animation", "Horreur", "Romance", "Thriller"];
 
 export default function SearchScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { homeVideos, search } = useApi();
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState(homeVideos.slice(0, 0));
+  const trending = homeVideos.slice(0, 6);
 
-  const results = query.trim().length > 0 ? searchVideos(query) : [];
-  const trending = VIDEOS.slice(0, 6);
+  async function handleSearch(q: string) {
+    setQuery(q);
+    if (q.trim().length > 0) {
+      const res = await search(q);
+      setResults(res);
+    } else {
+      setResults([]);
+    }
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -37,7 +47,7 @@ export default function SearchScreen() {
             placeholder="Films, séries, acteurs..."
             placeholderTextColor={colors.mutedForeground}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleSearch}
             autoFocus
             returnKeyType="search"
           />
